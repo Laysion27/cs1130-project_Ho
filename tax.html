@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assignment #2 - Income Tax Calculator | CS 1130</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="uni-badge">CS 1130 - Introduction to Computing • Ateneo de Davao University</div>
+      <h1>Assignment #2: Income Tax Calculator</h1>
+      <p class="instructor-line">Instructor: <strong>John Roy A. Geralde</strong></p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="container nav-links">
+      <a href="index.html" class="nav-link">Home &amp; Rubric</a>
+      <a href="conversion.html" class="nav-link">#1 Unit Conversion</a>
+      <a href="tax.html" class="nav-link active">#2 Income Tax Calculator</a>
+      <a href="loops.html" class="nav-link">#3 Looping Structures</a>
+      <a href="payroll.html" class="nav-link">#4 Simple Payroll</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section-card">
+      <div class="section-header">
+        <h2 class="section-title">Income Tax Calculator (Income Tax = Basic Tax + Rate)</h2>
+        <span class="weight-badge">15% of Project Grade</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="form-group">
+            <label for="taxableIncome">Net Taxable Income (PHP ₱)</label>
+            <input type="number" id="taxableIncome" min="0" step="0.01" placeholder="e.g., 520000" oninput="calculateIncomeTax()" />
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn btn-primary" onclick="calculateIncomeTax()">Compute Income Tax</button>
+            <button type="button" class="btn btn-secondary" onclick="clearTax()">Clear</button>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Test Examples from Assignment Table:</span>
+            <div class="btn-row" style="margin-top: 0;">
+              <button type="button" class="btn-preset" onclick="setTaxPreset(180000)">₱180,000</button>
+              <button type="button" class="btn-preset" onclick="setTaxPreset(320000)">₱320,000</button>
+              <button type="button" class="btn-preset" onclick="setTaxPreset(520000)">₱520,000</button>
+              <button type="button" class="btn-preset" onclick="setTaxPreset(930000)">₱930,000</button>
+              <button type="button" class="btn-preset" onclick="setTaxPreset(2400000)">₱2,400,000</button>
+              <button type="button" class="btn-preset" onclick="setTaxPreset(10000000)">₱10,000,000</button>
+            </div>
+          </div>
+          <div id="taxError" class="error-msg">Please enter a valid non-negative taxable income.</div>
+
+          <div class="result-box">
+            <div class="result-label">Computed Income Tax</div>
+            <div class="result-value" id="taxResult">₱ 0.00</div>
+            <div class="result-sub" id="taxBreakdown">Enter a taxable income to view the step-by-step computation.</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="table-wrapper" style="margin-top: 0;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Over</th>
+                  <th>But Not Over</th>
+                  <th>Basic Tax + Rate</th>
+                </tr>
+              </thead>
+              <tbody id="taxTableBody">
+                <tr data-bracket="0">
+                  <td>—</td>
+                  <td>₱250,000</td>
+                  <td>0%</td>
+                </tr>
+                <tr data-bracket="1">
+                  <td>₱250,000</td>
+                  <td>₱400,000</td>
+                  <td>20% of the excess over ₱250,000</td>
+                </tr>
+                <tr data-bracket="2">
+                  <td>₱400,000</td>
+                  <td>₱800,000</td>
+                  <td>₱30,000 + 25% of the excess over ₱400,000</td>
+                </tr>
+                <tr data-bracket="3">
+                  <td>₱800,000</td>
+                  <td>₱2,000,000</td>
+                  <td>₱130,000 + 30% of the excess over ₱800,000</td>
+                </tr>
+                <tr data-bracket="4">
+                  <td>₱2,000,000</td>
+                  <td>₱8,000,000</td>
+                  <td>₱490,000 + 32% of the excess over ₱2,000,000</td>
+                </tr>
+                <tr data-bracket="5">
+                  <td>₱8,000,000</td>
+                  <td>—</td>
+                  <td>₱2,410,000 + 35% of the excess over ₱8,000,000</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      CS 1130 - Introduction to Computing • Ateneo de Davao University
+    </div>
+  </footer>
+
+  <script>
+    const formatPHP = (amount) =>
+      '₱ ' + Number(amount).toLocaleString('en-PH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+
+    const calculateIncomeTax = () => {
+      const rawVal = document.getElementById('taxableIncome').value;
+      const errorEl = document.getElementById('taxError');
+      const resultEl = document.getElementById('taxResult');
+      const breakdownEl = document.getElementById('taxBreakdown');
+      const rows = document.querySelectorAll('#taxTableBody tr');
+
+      rows.forEach((row) => row.classList.remove('active-bracket'));
+
+      if (rawVal === '') {
+        errorEl.style.display = 'none';
+        resultEl.textContent = '₱ 0.00';
+        breakdownEl.textContent = 'Enter a taxable income to view the step-by-step computation.';
+        return;
+      }
+
+      const income = parseFloat(rawVal);
+      if (Number.isNaN(income) || income < 0) {
+        errorEl.style.display = 'block';
+        return;
+      }
+      errorEl.style.display = 'none';
+
+      let tax = 0;
+      let bracketIndex = 0;
+      let detail = '';
+
+      if (income <= 250000) {
+        tax = 0;
+        bracketIndex = 0;
+        detail = 'Taxable income is ₱250,000 or below (0% rate).';
+      } else if (income <= 400000) {
+        const excess = income - 250000;
+        tax = excess * 0.20;
+        bracketIndex = 1;
+        detail = `20% of (${formatPHP(income)} − ₱250,000) = 20% of ${formatPHP(excess)}`;
+      } else if (income <= 800000) {
+        const excess = income - 400000;
+        tax = 30000 + excess * 0.25;
+        bracketIndex = 2;
+        detail = `₱30,000 + 25% of (${formatPHP(income)} − ₱400,000) = ₱30,000 + ${formatPHP(excess * 0.25)}`;
+      } else if (income <= 2000000) {
+        const excess = income - 800000;
+        tax = 130000 + excess * 0.30;
+        bracketIndex = 3;
+        detail = `₱130,000 + 30% of (${formatPHP(income)} − ₱800,000) = ₱130,000 + ${formatPHP(excess * 0.30)}`;
+      } else if (income <= 8000000) {
+        const excess = income - 2000000;
+        tax = 490000 + excess * 0.32;
+        bracketIndex = 4;
+        detail = `₱490,000 + 32% of (${formatPHP(income)} − ₱2,000,000) = ₱490,000 + ${formatPHP(excess * 0.32)}`;
+      } else {
+        const excess = income - 8000000;
+        tax = 2410000 + excess * 0.35;
+        bracketIndex = 5;
+        detail = `₱2,410,000 + 35% of (${formatPHP(income)} − ₱8,000,000) = ₱2,410,000 + ${formatPHP(excess * 0.35)}`;
+      }
+
+      rows[bracketIndex].classList.add('active-bracket');
+      resultEl.textContent = formatPHP(tax);
+      breakdownEl.textContent = detail;
+    };
+
+    const setTaxPreset = (amount) => {
+      document.getElementById('taxableIncome').value = amount;
+      calculateIncomeTax();
+    };
+
+    const clearTax = () => {
+      document.getElementById('taxableIncome').value = '';
+      calculateIncomeTax();
+    };
+  </script>
+</body>
+</html>

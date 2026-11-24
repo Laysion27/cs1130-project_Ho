@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assignment #3 - Looping Structures | CS 1130</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="uni-badge">CS 1130 - Introduction to Computing • Ateneo de Davao University</div>
+      <h1>Assignment #3: Looping Structures</h1>
+      <p class="instructor-line">Instructor: <strong>John Roy A. Geralde</strong></p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="container nav-links">
+      <a href="index.html" class="nav-link">Home &amp; Rubric</a>
+      <a href="conversion.html" class="nav-link">#1 Unit Conversion</a>
+      <a href="tax.html" class="nav-link">#2 Income Tax Calculator</a>
+      <a href="loops.html" class="nav-link active">#3 Looping Structures</a>
+      <a href="payroll.html" class="nav-link">#4 Simple Payroll</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section-card">
+      <div class="section-header">
+        <h2 class="section-title">Factorial, Sum &amp; Average of First N Natural Numbers</h2>
+        <span class="weight-badge">15% of Project Grade</span>
+      </div>
+
+      <div class="form-group" style="max-width: 360px;">
+        <label for="loopNInput">Enter a Positive Integer (N)</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="number" id="loopNInput" min="1" max="170" step="1" value="5" oninput="computeLoops()" />
+          <button type="button" class="btn btn-primary" onclick="computeLoops()">Calculate</button>
+        </div>
+        <div id="loopError" class="error-msg">Please enter a positive integer between 1 and 170.</div>
+      </div>
+
+      <div class="grid-3">
+        <!-- 1. Factorial using While Loop -->
+        <div class="loop-card">
+          <div>
+            <h3>1. Nth Factorial (N!)</h3>
+            <span class="loop-tag">Using while loop</span>
+            <div class="result-box" style="margin-top: 0;">
+              <div class="result-label">Factorial Result</div>
+              <div class="result-value" id="factorialResult" style="font-size: 1.3rem;">120</div>
+              <div class="result-sub" id="factorialSteps">1 × 2 × 3 × 4 × 5</div>
+            </div>
+          </div>
+          <details class="code-viewer">
+            <summary>View JS While Loop</summary>
+            <pre>let factorial = 1;
+let i = 1;
+while (i <= n) {
+  factorial *= i;
+  i++;
+}</pre>
+          </details>
+        </div>
+
+        <!-- 2. Sum using Do While Loop -->
+        <div class="loop-card">
+          <div>
+            <h3>2. Sum of First N Numbers</h3>
+            <span class="loop-tag">Using do...while loop</span>
+            <div class="result-box" style="margin-top: 0;">
+              <div class="result-label">Total Sum</div>
+              <div class="result-value" id="sumResult" style="font-size: 1.3rem;">15</div>
+              <div class="result-sub" id="sumSteps">1 + 2 + 3 + 4 + 5</div>
+            </div>
+          </div>
+          <details class="code-viewer">
+            <summary>View JS Do...While Loop</summary>
+            <pre>let sum = 0;
+let i = 1;
+do {
+  sum += i;
+  i++;
+} while (i <= n);</pre>
+          </details>
+        </div>
+
+        <!-- 3. Average using For Loop -->
+        <div class="loop-card">
+          <div>
+            <h3>3. Average of First N Numbers</h3>
+            <span class="loop-tag">Using for loop</span>
+            <div class="result-box" style="margin-top: 0;">
+              <div class="result-label">Average Value</div>
+              <div class="result-value" id="avgResult" style="font-size: 1.3rem;">3.00</div>
+              <div class="result-sub" id="avgSteps">15 ÷ 5 = 3.00</div>
+            </div>
+          </div>
+          <details class="code-viewer">
+            <summary>View JS For Loop</summary>
+            <pre>let total = 0;
+for (let i = 1; i <= n; i++) {
+  total += i;
+}
+const average = total / n;</pre>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      CS 1130 - Introduction to Computing • Ateneo de Davao University
+    </div>
+  </footer>
+
+  <script>
+    const computeLoops = () => {
+      const rawVal = document.getElementById('loopNInput').value;
+      const errorEl = document.getElementById('loopError');
+      const n = parseInt(rawVal, 10);
+
+      if (Number.isNaN(n) || n < 1 || n > 170 || !Number.isInteger(Number(rawVal))) {
+        errorEl.style.display = 'block';
+        return;
+      }
+      errorEl.style.display = 'none';
+
+      // 1. Nth Factorial using a WHILE loop
+      let factorial = 1;
+      let iWhile = 1;
+      const factTerms = [];
+      while (iWhile <= n) {
+        factorial *= iWhile;
+        if (n <= 7) factTerms.push(iWhile);
+        iWhile++;
+      }
+      document.getElementById('factorialResult').textContent = factorial.toLocaleString('en-US');
+      document.getElementById('factorialSteps').textContent =
+        n <= 7 ? factTerms.join(' × ') : `1 × 2 × ... × ${n}`;
+
+      // 2. Sum of first N numbers using a DO...WHILE loop
+      let sum = 0;
+      let iDo = 1;
+      const sumTerms = [];
+      do {
+        sum += iDo;
+        if (n <= 8) sumTerms.push(iDo);
+        iDo++;
+      } while (iDo <= n);
+      document.getElementById('sumResult').textContent = sum.toLocaleString('en-US');
+      document.getElementById('sumSteps').textContent =
+        n <= 8 ? sumTerms.join(' + ') : `1 + 2 + ... + ${n}`;
+
+      // 3. Average of first N numbers using a FOR loop
+      let totalForAvg = 0;
+      for (let iFor = 1; iFor <= n; iFor++) {
+        totalForAvg += iFor;
+      }
+      const average = totalForAvg / n;
+      document.getElementById('avgResult').textContent = average.toFixed(2);
+      document.getElementById('avgSteps').textContent = `${totalForAvg.toLocaleString('en-US')} ÷ ${n} = ${average.toFixed(2)}`;
+    };
+
+    window.addEventListener('DOMContentLoaded', computeLoops);
+  </script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assignment #4 - Simple Payroll | CS 1130</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="uni-badge">CS 1130 - Introduction to Computing • Ateneo de Davao University</div>
+      <h1>Assignment #4: Simple Payroll Program</h1>
+      <p class="instructor-line">Instructor: <strong>John Roy A. Geralde</strong></p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="container nav-links">
+      <a href="index.html" class="nav-link">Home &amp; Rubric</a>
+      <a href="conversion.html" class="nav-link">#1 Unit Conversion</a>
+      <a href="tax.html" class="nav-link">#2 Income Tax Calculator</a>
+      <a href="loops.html" class="nav-link">#3 Looping Structures</a>
+      <a href="payroll.html" class="nav-link active">#4 Simple Payroll</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section-card">
+      <div class="section-header">
+        <h2 class="section-title">Employee Payroll Management</h2>
+        <span class="weight-badge">25% of Project Grade</span>
+      </div>
+
+      <div class="grid-2">
+        <!-- Add Employee Form -->
+        <div style="background: #f8fafc; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
+          <h3 style="font-size: 1.05rem; color: var(--addu-blue); margin-bottom: 0.85rem;">Add Employee to Payroll</h3>
+          <div class="form-group">
+            <label for="empName">Employee Name</label>
+            <input type="text" id="empName" placeholder="e.g., Juan Dela Cruz" />
+          </div>
+          <div class="grid-3" style="gap: 0.75rem;">
+            <div class="form-group">
+              <label for="daysWorked">Days Worked</label>
+              <input type="number" id="daysWorked" min="0" step="0.5" placeholder="e.g., 15" />
+            </div>
+            <div class="form-group">
+              <label for="dailyRate">Daily Rate (₱)</label>
+              <input type="number" id="dailyRate" min="0" step="0.01" placeholder="e.g., 650" />
+            </div>
+            <div class="form-group">
+              <label for="deductionAmount">Deduction Amount (₱)</label>
+              <input type="number" id="deductionAmount" min="0" step="0.01" placeholder="e.g., 500" />
+            </div>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn btn-primary" onclick="addEmployee()">+ Add Employee</button>
+            <button type="button" class="btn btn-secondary" onclick="loadSamplePayroll()">Load Sample Data</button>
+          </div>
+          <div id="payrollAddError" class="error-msg"></div>
+        </div>
+
+        <!-- Delete Employee Form -->
+        <div style="background: #fff5f5; padding: 1.25rem; border-radius: 8px; border: 1px solid #fecaca; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3 style="font-size: 1.05rem; color: var(--danger); margin-bottom: 0.85rem;">Delete Employee by Line Number</h3>
+            <p style="font-size: 0.86rem; color: #7f1d1d; margin-bottom: 0.85rem;">
+              Enter the payroll table <strong>No.</strong> (Line Number) to remove an employee. Line numbers automatically update after deletion.
+            </p>
+            <div class="form-group">
+              <label for="deleteLineNo">Line Number (No.) to Delete</label>
+              <input type="number" id="deleteLineNo" min="1" step="1" placeholder="e.g., 1" />
+            </div>
+          </div>
+          <div>
+            <div class="btn-row">
+              <button type="button" class="btn btn-danger" onclick="deleteEmployeeByLine()">Delete Line Number</button>
+              <button type="button" class="btn btn-secondary" onclick="clearAllPayroll()">Clear All Records</button>
+            </div>
+            <div id="payrollDeleteError" class="error-msg"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payroll Table -->
+      <div class="table-wrapper" style="margin-top: 1.5rem;">
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Employee Name</th>
+              <th class="num">Days Worked</th>
+              <th class="num">Daily Rate</th>
+              <th class="num">Gross Pay</th>
+              <th class="num">Deduction Amount</th>
+              <th class="num">Net Pay</th>
+            </tr>
+          </thead>
+          <tbody id="payrollTableBody"></tbody>
+          <tfoot id="payrollTableFoot">
+            <tr>
+              <td colspan="4">TOTALS (0 Employees)</td>
+              <td class="num">₱ 0.00</td>
+              <td class="num">₱ 0.00</td>
+              <td class="num">₱ 0.00</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      CS 1130 - Introduction to Computing • Ateneo de Davao University
+    </div>
+  </footer>
+
+  <script>
+    const formatPHP = (amount) =>
+      '₱ ' + Number(amount).toLocaleString('en-PH', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+
+    let payrollList = [
+      { name: 'Maria Santos', daysWorked: 22, dailyRate: 850, deduction: 1200 },
+      { name: 'Carlos Reyes', daysWorked: 20, dailyRate: 720, deduction: 850 },
+      { name: 'Angela Bautista', daysWorked: 15, dailyRate: 950, deduction: 1100 }
+    ];
+
+    const escapeHTML = (str) => {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    };
+
+    const renderPayrollTable = () => {
+      const tbody = document.getElementById('payrollTableBody');
+      const tfoot = document.getElementById('payrollTableFoot');
+      tbody.innerHTML = '';
+
+      let totalGross = 0;
+      let totalDeduction = 0;
+      let totalNet = 0;
+
+      if (payrollList.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">
+              No employees in the payroll list. Add an employee above or click "Load Sample Data".
+            </td>
+          </tr>
+        `;
+      } else {
+        payrollList.forEach((emp, index) => {
+          const lineNo = index + 1;
+          const grossPay = emp.daysWorked * emp.dailyRate;
+          const netPay = grossPay - emp.deduction;
+
+          totalGross += grossPay;
+          totalDeduction += emp.deduction;
+          totalNet += netPay;
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><strong>${lineNo}</strong></td>
+            <td>${escapeHTML(emp.name)}</td>
+            <td class="num">${emp.daysWorked}</td>
+            <td class="num">${formatPHP(emp.dailyRate)}</td>
+            <td class="num">${formatPHP(grossPay)}</td>
+            <td class="num">${formatPHP(emp.deduction)}</td>
+            <td class="num"><strong>${formatPHP(netPay)}</strong></td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      tfoot.innerHTML = `
+        <tr>
+          <td colspan="4">TOTALS (${payrollList.length} ${payrollList.length === 1 ? 'Employee' : 'Employees'})</td>
+          <td class="num">${formatPHP(totalGross)}</td>
+          <td class="num">${formatPHP(totalDeduction)}</td>
+          <td class="num">${formatPHP(totalNet)}</td>
+        </tr>
+      `;
+    };
+
+    const addEmployee = () => {
+      const nameInput = document.getElementById('empName');
+      const daysInput = document.getElementById('daysWorked');
+      const rateInput = document.getElementById('dailyRate');
+      const deductionInput = document.getElementById('deductionAmount');
+      const errorEl = document.getElementById('payrollAddError');
+
+      const name = nameInput.value.trim();
+      const daysWorked = parseFloat(daysInput.value);
+      const dailyRate = parseFloat(rateInput.value);
+      const deduction = deductionInput.value === '' ? 0 : parseFloat(deductionInput.value);
+
+      if (!name || Number.isNaN(daysWorked) || daysWorked < 0 || Number.isNaN(dailyRate) || dailyRate < 0 || Number.isNaN(deduction) || deduction < 0) {
+        errorEl.textContent = 'Please fill in a valid Employee Name, Days Worked, Daily Rate, and Deduction Amount.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      errorEl.style.display = 'none';
+      payrollList.push({ name, daysWorked, dailyRate, deduction });
+
+      nameInput.value = '';
+      daysInput.value = '';
+      rateInput.value = '';
+      deductionInput.value = '';
+      nameInput.focus();
+
+      renderPayrollTable();
+    };
+
+    const deleteEmployeeByLine = () => {
+      const lineInput = document.getElementById('deleteLineNo');
+      const errorEl = document.getElementById('payrollDeleteError');
+      const lineNo = parseInt(lineInput.value, 10);
+
+      if (payrollList.length === 0) {
+        errorEl.textContent = 'The payroll list is already empty.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      if (Number.isNaN(lineNo) || lineNo < 1 || lineNo > payrollList.length) {
+        errorEl.textContent = `Invalid Line Number. Please enter a number between 1 and ${payrollList.length}.`;
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      errorEl.style.display = 'none';
+      payrollList.splice(lineNo - 1, 1);
+      lineInput.value = '';
+      renderPayrollTable();
+    };
+
+    const loadSamplePayroll = () => {
+      payrollList = [
+        { name: 'Maria Santos', daysWorked: 22, dailyRate: 850, deduction: 1200 },
+        { name: 'Carlos Reyes', daysWorked: 20, dailyRate: 720, deduction: 850 },
+        { name: 'Angela Bautista', daysWorked: 15, dailyRate: 950, deduction: 1100 }
+      ];
+      document.getElementById('payrollAddError').style.display = 'none';
+      document.getElementById('payrollDeleteError').style.display = 'none';
+      renderPayrollTable();
+    };
+
+    const clearAllPayroll = () => {
+      payrollList = [];
+      document.getElementById('payrollAddError').style.display = 'none';
+      document.getElementById('payrollDeleteError').style.display = 'none';
+      renderPayrollTable();
+    };
+
+    window.addEventListener('DOMContentLoaded', renderPayrollTable);
+  </script>
+</body>
+</html>

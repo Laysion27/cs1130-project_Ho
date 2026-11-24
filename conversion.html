@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assignment #1 - Unit Conversion | CS 1130</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="uni-badge">CS 1130 - Introduction to Computing • Ateneo de Davao University</div>
+      <h1>Assignment #1: Unit Conversion</h1>
+      <p class="instructor-line">Instructor: <strong>John Roy A. Geralde</strong></p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="container nav-links">
+      <a href="index.html" class="nav-link">Home &amp; Rubric</a>
+      <a href="conversion.html" class="nav-link active">#1 Unit Conversion</a>
+      <a href="tax.html" class="nav-link">#2 Income Tax Calculator</a>
+      <a href="loops.html" class="nav-link">#3 Looping Structures</a>
+      <a href="payroll.html" class="nav-link">#4 Simple Payroll</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="section-card">
+      <div class="section-header">
+        <h2 class="section-title">Temperature &amp; Length Converter</h2>
+        <span class="weight-badge">15% of Project Grade</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="form-group">
+            <label for="conversionType">Select Conversion Type</label>
+            <select id="conversionType" onchange="performConversion()">
+              <option value="cToF">Celsius (°C) to Fahrenheit (°F)</option>
+              <option value="fToC">Fahrenheit (°F) to Celsius (°C)</option>
+              <option value="mToFt">Meters (m) to Feet (ft)</option>
+              <option value="ftToM">Feet (ft) to Meters (m)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="conversionInput">Enter Value to Convert</label>
+            <input type="number" id="conversionInput" step="any" value="100" placeholder="e.g., 100" oninput="performConversion()" />
+          </div>
+
+          <div class="btn-row">
+            <button type="button" class="btn btn-primary" onclick="performConversion()">Convert</button>
+            <button type="button" class="btn btn-secondary" onclick="clearConversion()">Clear</button>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <span style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Quick Presets:</span>
+            <div class="btn-row" style="margin-top: 0;">
+              <button type="button" class="btn-preset" onclick="setConversionPreset('cToF', 100)">100°C Boiling</button>
+              <button type="button" class="btn-preset" onclick="setConversionPreset('fToC', 32)">32°F Freezing</button>
+              <button type="button" class="btn-preset" onclick="setConversionPreset('mToFt', 1)">1 Meter</button>
+              <button type="button" class="btn-preset" onclick="setConversionPreset('ftToM', 10)">10 Feet</button>
+            </div>
+          </div>
+          <div id="convError" class="error-msg">Please enter a valid numeric value.</div>
+        </div>
+
+        <div>
+          <div class="result-box" style="margin-top: 0; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+            <div class="result-label">Converted Result</div>
+            <div class="result-value" id="convResult">212.00 °F</div>
+            <div class="result-sub" id="convFormula">Formula: (100 °C × 9/5) + 32 = 212.00 °F</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      CS 1130 - Introduction to Computing • Ateneo de Davao University
+    </div>
+  </footer>
+
+  <script>
+    const performConversion = () => {
+      const type = document.getElementById('conversionType').value;
+      const rawVal = document.getElementById('conversionInput').value;
+      const errorEl = document.getElementById('convError');
+      const resultEl = document.getElementById('convResult');
+      const formulaEl = document.getElementById('convFormula');
+
+      if (rawVal === '') {
+        errorEl.style.display = 'none';
+        resultEl.textContent = '—';
+        formulaEl.textContent = 'Enter a value to calculate.';
+        return;
+      }
+
+      const val = parseFloat(rawVal);
+      if (Number.isNaN(val)) {
+        errorEl.style.display = 'block';
+        return;
+      }
+      errorEl.style.display = 'none';
+
+      let converted = 0;
+      let unit = '';
+      let formula = '';
+
+      switch (type) {
+        case 'cToF':
+          converted = (val * 9 / 5) + 32;
+          unit = '°F';
+          formula = `(${val} °C × 9/5) + 32 = ${converted.toFixed(2)} °F`;
+          break;
+        case 'fToC':
+          converted = (val - 32) * 5 / 9;
+          unit = '°C';
+          formula = `(${val} °F − 32) × 5/9 = ${converted.toFixed(2)} °C`;
+          break;
+        case 'mToFt':
+          converted = val * 3.28084;
+          unit = 'ft';
+          formula = `${val} m × 3.28084 = ${converted.toFixed(2)} ft`;
+          break;
+        case 'ftToM':
+          converted = val / 3.28084;
+          unit = 'm';
+          formula = `${val} ft ÷ 3.28084 = ${converted.toFixed(2)} m`;
+          break;
+      }
+
+      resultEl.textContent = `${converted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })} ${unit}`;
+      formulaEl.textContent = `Formula: ${formula}`;
+    };
+
+    const setConversionPreset = (type, val) => {
+      document.getElementById('conversionType').value = type;
+      document.getElementById('conversionInput').value = val;
+      performConversion();
+    };
+
+    const clearConversion = () => {
+      document.getElementById('conversionInput').value = '';
+      performConversion();
+    };
+
+    window.addEventListener('DOMContentLoaded', performConversion);
+  </script>
+</body>
+</html>
